@@ -18,6 +18,8 @@ class GridView:
         self._c = cell_size
         self._dx, self._dy = 0, 0
 
+        self._data = {}
+
     def _draw_grid(self):
         sx = self._dx % self._c
         sy = self._dy % self._c
@@ -41,25 +43,39 @@ class GridView:
         self._dy += dy * accel
 
     def _mark_mouse(self):
-        mx, my = pg.mouse.get_pos()
-        sx, sy = self._abs2topleft(mx, my)
+        row, col = self._mouse2pos()
+        sx, sy = self._pos2disp(row, col)
         pg.draw.rect(
             self._screen, GRAY,
             (sx+1, sy+1, self._c-1, self._c-1)
         )
 
-    def _abs2topleft(self, x, y):
-        a, b = divmod(x, self._c)
-        k = self._dx % self._c
-        if b < k: a -= 1
-        sx = a * self._c + k
+    def _mouse2pos(self):
+        mx, my = pg.mouse.get_pos()
+        rx, ry = mx - self._dx, my - self._dy
 
-        a, b = divmod(y, self._c)
-        k = self._dy % self._c
-        if b < k: a -= 1
-        sy = a * self._c + k
+        row = ry // self._c
+        col = rx // self._c
+
+        return row, col
+
+    def _pos2disp(self, row, col):
+        sx = col * self._c + self._dx
+        sy = row * self._c + self._dy
 
         return sx, sy
+
+    def _lclick(self):
+        pos = self._mouse2pos()
+        self._data[pos] = 1
+
+    def _draw_data(self):
+        a = self._c // 4
+        img = pg.image.load('o.png')
+        img = pg.transform.scale(img, (self._c-a, self._c-a))
+        for row, col in self._data:
+            sx, sy = self._pos2disp(row,col)
+            self._screen.blit(img, (sx + a//2, sy + a//2))
 
     def mainloop(self):
         screen_size = self._w+1, self._h+1
@@ -72,10 +88,13 @@ class GridView:
                     print("Bye...")
                     pg.quit()
                     return
+                elif event.type == pg.MOUSEBUTTONUP:
+                    self._lclick()
 
             self._screen.fill(WHITE)
             self._draw_grid()
             self._mark_mouse()
+            self._draw_data()
 
             keys = pg.key.get_pressed()
             for k in MOVEMENTS:
