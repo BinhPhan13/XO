@@ -2,14 +2,7 @@ import pygame as pg
 
 BLACK = 0, 0, 0
 WHITE = 240, 240, 240
-GRAY = 200,200,200
-
-MOVEMENTS = {
-    pg.K_LEFT: (-1, 0),
-    pg.K_RIGHT: (1, 0),
-    pg.K_UP: (0, -1),
-    pg.K_DOWN: (0, 1),
-}
+GRAY = 200, 200, 200
 
 class GridView:
     def __init__(self, width:int, height:int, cell_size:int):
@@ -35,10 +28,14 @@ class GridView:
                 (0,y), (self._w,y)
             )
 
-    def _move(self, key):
-        dx, dy = MOVEMENTS[key]
+    def _move(self, dx, dy):
+        if not (self._keys[pg.K_LCTRL]
+            or self._keys[pg.K_RCTRL]): return
 
-        accel = self._c//5
+        if dx != 0: dx //= abs(dx)
+        if dy != 0: dy //= abs(dy)
+
+        accel = self._c//min(self._c, 5)
         self._dx += dx * accel
         self._dy += dy * accel
 
@@ -83,26 +80,27 @@ class GridView:
         clock = pg.time.Clock()
 
         while True:
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    print("Bye...")
-                    pg.quit()
-                    return
-                elif event.type == pg.MOUSEBUTTONUP:
-                    self._lclick()
-
             self._screen.fill(WHITE)
             self._draw_grid()
             self._mark_mouse()
             self._draw_data()
 
-            keys = pg.key.get_pressed()
-            for k in MOVEMENTS:
-                if keys[k]: self._move(k)
-
             pg.display.flip()
             clock.tick(60)
 
+            self._keys = pg.key.get_pressed()
+
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    print("Bye...")
+                    pg.quit()
+                    return
+                elif event.type == pg.MOUSEMOTION:
+                    dx, dy = event.dict['rel']
+                    self._move(dx, dy)
+                elif event.type == pg.MOUSEBUTTONUP:
+                    self._lclick()
+
 if __name__ == '__main__':
-    view = GridView(7, 5, 100)
+    view = GridView(20, 12, 50)
     view.mainloop()
