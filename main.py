@@ -4,6 +4,7 @@ from game import Game
 BLACK = 0, 0, 0
 WHITE = 240, 240, 240
 GRAY = 200, 200, 200
+GREEN = 0, 255, 0
 
 class GridView:
     def __init__(self, width:int, height:int, cell_size:int):
@@ -79,6 +80,20 @@ class GridView:
         self._game.move(pos)
 
     def _draw_data(self):
+        if self._game.last_pos is None: return
+        sx, sy = self._pos2disp(*self._game.last_pos)
+        pg.draw.rect(
+            self._screen, GRAY,
+            (sx+1, sy+1, self._c-1, self._c-1)
+        )
+
+        for pos in self._game.streak:
+            sx, sy = self._pos2disp(*pos)
+            pg.draw.rect(
+                self._screen, GREEN,
+                (sx+1, sy+1, self._c-1, self._c-1)
+            )
+
         for pos, player in self._game.data:
             sx, sy = self._pos2disp(*pos)
             sx += self._img_bd
@@ -102,6 +117,8 @@ class GridView:
             clock.tick(60)
 
             self._keys = pg.key.get_pressed()
+            if self._keys[pg.K_n]:
+                self._game = Game()
 
             for event in pg.event.get():
                 if event.type == pg.QUIT:
