@@ -1,4 +1,5 @@
 import pygame as pg
+from game import Game
 
 BLACK = 0, 0, 0
 WHITE = 240, 240, 240
@@ -11,7 +12,18 @@ class GridView:
         self._c = cell_size
         self._dx, self._dy = 0, 0
 
-        self._data = {}
+        self._load_imgs()
+        self._game = Game()
+
+    def _load_imgs(self):
+        self._img_bd = self._c//min(self._c, 8)
+        img_size = self._c - self._img_bd*2, self._c - self._img_bd*2
+
+        img = pg.image.load('x.png')
+        self._ximg = pg.transform.scale(img, img_size)
+
+        img = pg.image.load('o.png')
+        self._oimg = pg.transform.scale(img, img_size)
 
     def _draw_grid(self):
         sx = self._dx % self._c
@@ -64,15 +76,16 @@ class GridView:
 
     def _lclick(self):
         pos = self._mouse2pos()
-        self._data[pos] = 1
+        self._game.move(pos)
 
     def _draw_data(self):
-        a = self._c // 4
-        img = pg.image.load('o.png')
-        img = pg.transform.scale(img, (self._c-a, self._c-a))
-        for row, col in self._data:
-            sx, sy = self._pos2disp(row,col)
-            self._screen.blit(img, (sx + a//2, sy + a//2))
+        for pos, player in self._game.data:
+            sx, sy = self._pos2disp(*pos)
+            sx += self._img_bd
+            sy += self._img_bd
+
+            img = self._ximg if player > 0 else self._oimg
+            self._screen.blit(img, (sx,sy))
 
     def mainloop(self):
         screen_size = self._w+1, self._h+1
