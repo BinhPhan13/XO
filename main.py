@@ -123,8 +123,7 @@ class GridView:
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     print("Bye...")
-                    pg.quit()
-                    return
+                    return pg.quit()
                 elif event.type == pg.MOUSEMOTION:
                     dx, dy = event.dict['rel']
                     self._move(dx, dy)
