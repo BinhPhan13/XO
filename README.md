@@ -4,4 +4,5 @@
 - To play, run main.py:
     - **Click** to make a move
     - **Hold CTRL key** and **move the mouse** to drag the map
+    - **Press "u"** to undo last move
     - **Press "n"** to start new game

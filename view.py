@@ -42,9 +42,6 @@ class GridView:
             )
 
     def _move(self, dx, dy):
-        if not (self._keys[pg.K_LCTRL]
-            or self._keys[pg.K_RCTRL]): return
-
         if dx != 0: dx //= abs(dx)
         if dy != 0: dy //= abs(dy)
 
@@ -116,16 +113,17 @@ class GridView:
             pg.display.flip()
             clock.tick(60)
 
-            self._keys = pg.key.get_pressed()
-            if self._keys[pg.K_n]:
-                self._game = Game()
-
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     print("Bye...")
                     return pg.quit()
-                elif event.type == pg.MOUSEMOTION:
-                    dx, dy = event.dict['rel']
-                    self._move(dx, dy)
-                elif event.type == pg.MOUSEBUTTONUP:
+                if event.type == pg.MOUSEMOTION:
+                    mods = pg.key.get_mods()
+                    if not mods & pg.KMOD_CTRL: continue
+                    self._move(*event.rel)
+                if event.type == pg.MOUSEBUTTONUP:
                     self._lclick()
+                if event.type == pg.KEYUP:
+                    key = event.key
+                    if key == pg.K_u: self._game.undo()
+                    if key == pg.K_n: self._game = Game()
