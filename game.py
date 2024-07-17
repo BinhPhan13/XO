@@ -13,8 +13,7 @@ class Game:
         self._data.pop(self._last_pos)
         self._player = next(self._turns)
 
-        marks = list(self._data)
-        self._last_pos = marks[-1]
+        self._last_pos = next(reversed(self._data))
         self.streak = tuple()
 
     def move(self, pos):
@@ -74,3 +73,4 @@ class Game:
     @property
     def data(self):
         return self._data.items()
+

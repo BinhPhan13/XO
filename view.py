@@ -42,20 +42,8 @@ class GridView:
             )
 
     def _move(self, dx, dy):
-        if dx != 0: dx //= abs(dx)
-        if dy != 0: dy //= abs(dy)
-
-        accel = self._c//min(self._c, 5)
-        self._dx += dx * accel
-        self._dy += dy * accel
-
-    def _mark_mouse(self):
-        row, col = self._mouse2pos()
-        sx, sy = self._pos2disp(row, col)
-        pg.draw.rect(
-            self._screen, GRAY,
-            (sx+1, sy+1, self._c-1, self._c-1)
-        )
+        self._dx += dx
+        self._dy += dy
 
     def _mouse2pos(self):
         mx, my = pg.mouse.get_pos()
@@ -99,31 +87,42 @@ class GridView:
             img = self._ximg if player > 0 else self._oimg
             self._screen.blit(img, (sx,sy))
 
+    def _refresh(self):
+        self._screen.fill(WHITE)
+        self._draw_grid()
+        self._draw_data()
+
+        pg.display.flip()
+
     def mainloop(self):
         screen_size = self._w+1, self._h+1
         self._screen = pg.display.set_mode(screen_size)
         clock = pg.time.Clock()
 
+        self._refresh()
         while True:
-            self._screen.fill(WHITE)
-            self._draw_grid()
-            self._mark_mouse()
-            self._draw_data()
-
-            pg.display.flip()
-            clock.tick(60)
+            clock.tick(30)
+            changed = False
 
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     print("Bye...")
                     return pg.quit()
+
                 if event.type == pg.MOUSEMOTION:
                     mods = pg.key.get_mods()
                     if not mods & pg.KMOD_CTRL: continue
-                    self._move(*event.rel)
+                    self._move(*event.rel); changed = True
+
                 if event.type == pg.MOUSEBUTTONUP:
-                    self._lclick()
+                    self._lclick(); changed = True
+
                 if event.type == pg.KEYUP:
                     key = event.key
-                    if key == pg.K_u: self._game.undo()
-                    if key == pg.K_n: self._game = Game()
+                    if key == pg.K_u:
+                        self._game.undo(); changed = True
+                    if key == pg.K_n:
+                        self._game = Game(); changed = True
+
+            if changed: self._refresh()
+
